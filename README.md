@@ -31,7 +31,7 @@ My project includes the following files:
 * model.py containing the script to create and train the model
 * drive.py for driving the car in autonomous mode
 * model.h5 containing a trained convolution neural network 
-* writeup_report.md or writeup_report.pdf summarizing the results
+* summarizing the results in this README.md file
 
 #### 2. Submission includes functional code
 Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing 
@@ -114,13 +114,8 @@ I then recorded the vehicle recovering from the left side and right sides of the
 
 To augment the data sat, I also flipped images and angles thinking that this would assit in reducing the bias in the data from the high appearance of left turns. I did not generate this images to disk and created them on the fly during the loading of the data sets.
 
+After the collection process, I had 70,200 number of data points. I then preprocessed this data by cropping the data to only focus on the road and to remove the background and car information.
 
+I finally randomly shuffled the data set and put 20% of the data into a validation set. 
 
-Etc ....
-
-After the collection process, I had X number of data points. I then preprocessed this data by ...
-
-
-I finally randomly shuffled the data set and put Y% of the data into a validation set. 
-
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate wasn't necessary.
+I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was 3 as evidenced by low training loss of 0.008 and validation loss of 0.011. I used an adam optimizer so that manually training the learning rate wasn't necessary.
