@@ -14,17 +14,12 @@ import matplotlib.image as mpimg
 import tensorflow as tf
 
 samples = []
+# Load training data it includes images and steering angles for the vehicle driving on the road
 with open('./data/driving_orig_log.csv') as csvfile:
     reader = csv.reader(csvfile)
     for line in reader:
         samples.append(line)
         
-#with open('./data/driving_run2_log.csv') as csvfile:
-#    reader = csv.reader(csvfile)
-#    for line in reader:
-#        samples.append(line)
-        
-#print(samples)
 from sklearn.model_selection import train_test_split
 train_samples, validation_samples = train_test_split(samples, test_size=0.2)
 
@@ -37,9 +32,10 @@ import cv2
 import numpy as np
 import sklearn
 
+# The image size for the training data is below
 ch, row, col = 3, 160, 320   # camera format
-#ch, row, col = 1, 160, 320   # camera format
 
+# This function builds the CNN model using Keras
 def get_model_cai(time_len=1):
   model = Sequential()
   model.add(Lambda(lambda x: x/127.5 - 1.,
@@ -65,18 +61,7 @@ def get_model_cai(time_len=1):
 
   return model
 
-def rgb2gray(rgb):
-
-    r, g, b = rgb[:,:,:,0], rgb[:,:,:,1], rgb[:,:,:,2]
-    gray = rgb;
-    #gray = 0.2989 * r + 0.5870 * g + 0.1140 * b
-    gray = np.delete(gray,1, 3)
-    gray = np.delete(gray,1, 3)
-    #gray[:,:,:,0] = 0.2989 * r + 0.5870 * g + 0.1140 * b
-    gray[:,:,:,0] = 0.2126 * r + 0.7152 * g + 0.0722 * b
-    return gray
-
-
+# The generator function selects batch sizes of inputs to feed to the model during training
 def generator(samples, batch_size=32):
     num_samples = len(samples)
     while 1: # Loop forever so the generator never terminates
@@ -91,21 +76,25 @@ def generator(samples, batch_size=32):
                 name_left = './data/IMG/'+batch_sample[1].split('/')[-1]
                 name_right = './data/IMG/'+batch_sample[2].split('/')[-1]
                 
+                # Get the center images from the vehicle and flip it horizontally
                 center_image = cv2.imread(name_center)
                 center_image_flip = cv2.flip(center_image,1)
                 center_angle = float(batch_sample[3])
                 center_angle_flip = -center_angle                
                 
+                # Get the left images from the vehicle and flip it horizontally
                 left_image = cv2.imread(name_left)
                 left_image_flip = cv2.flip(left_image,1)
                 left_angle = float(batch_sample[3])+0.3
                 left_angle_flip = -left_angle 
                 
+                # Get the right images from the vehicle and flip it horizontally
                 right_image = cv2.imread(name_right)
                 right_image_flip = cv2.flip(right_image,1)
                 right_angle = float(batch_sample[3])-0.3
                 right_angle_flip = -right_angle
                 
+                # Add all images to the images array and all angles to the angles array
                 images.append(center_image)
                 angles.append(center_angle)
                 images.append(left_image)
@@ -127,18 +116,20 @@ def generator(samples, batch_size=32):
 
             yield sklearn.utils.shuffle(X_train, y_train)
 
-# compile and train the model using the generator function
+# Setup the training and validation generators
 train_generator = generator(train_samples, batch_size=32)
 validation_generator = generator(validation_samples, batch_size=32)
 
 model = get_model_cai()
+
+# Load any previous models if they exist to continue training
 if os.path.isfile("model.h5"):
     model = load_model("model.h5")
 
-#model.compile(loss='mse', optimizer='adam')
-
+# Compile and train the model using the generator function
 model.fit_generator(train_generator, samples_per_epoch=
             len(train_samples), validation_data=validation_generator, 
             nb_val_samples=len(validation_samples), nb_epoch=3)
 
+# Save the model to the disk
 model.save('model.h5')
